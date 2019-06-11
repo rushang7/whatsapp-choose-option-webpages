@@ -1,0 +1,114 @@
+<html>
+    <head>
+        <title>Choose Locality</title>
+    </head>
+    <body>
+        <h1>Choose Locality</h1>
+
+        <ol id="MdmsValueList" >
+
+        </ol>
+
+        <script>
+
+                var mdmsPath = "/egov-mdms-service/v1/_search";
+    
+                let moduleName = "egov-location";
+                let masterName = "TenantBoundary";
+                let filterPath = "$.[1].boundary.children.*.children.*.children.*.name";
+            
+                var whatsappURL = "https://api.whatsapp.com/send";
+ 
+                // window.onload = getMdmsData();
+                window.onload = displayMdmsValueList({"ResponseInfo":null,"MdmsRes":{"egov-location":{"TenantBoundary":["Ajit Nagar","Back Side 33 KVA Grid Patiala Road","Back Side 66 KVA Grid Patiala Road","Back Side Civil Courts Colony","Backside Brijbala Hospital","Bigharwal Chowk to Railway Station","Chandar Colony Biggarwal Road","Deep Rice Mill Road","Aggarsain Chowk to Mal Godown - Both Sides","ATAR SINGH COLONY","Back Side Naina Devi Mandir","BACKSIDE OLD GRAIN MARKET","Bakhtaur Nagar","Bhai Mool Chand Sahib Colony","College Road (Southern side)","Ekta Colony (Southern Side)","Charjan Wala Mohalla","Cinema Road","Cinema Road to Ali Bazaar (Nothern Side)","Deedar Tailor to Mata Modi Park- West Side","Dental College","Gaushala, Arora Colony","Gugga Maadi Road (east side)","Gurudwara Niai Sahib Street 1","Jaura Khoo to Saraffa Bazaar (Southern Side)","Mohalla Akalgarh Gurudwara","Mohalla Bhojeka (both sides)","Mohalla Rajan Wala (both sides)","Mohalla Majoran","Mohalla Angaria wala","Mohalla Banda Patti","Mohalla Bhai Ka","Kailash Parbat","Mohalla Bhadra Kali Mandir","Mohalla Bhatta Wala","Mohalla Bhawdeyan Wala","Mohalla Kohliyan","Mohalla Singhkiyan (Nothern Side)","Mohalla-Kashayian wala","Mohalla-Singhkiya wala","Mohalla Ganj Sheeda","Mohalla Kango","Mohalla Singh kia","NEAR GURUDWARA PEHALI PATSHAHI UDAM SINGH ROAD"]}}});
+    
+                function getTenantId() {
+                    var urlParams = new URLSearchParams(location.search);
+                    return urlParams.get("tenantId");
+                }
+
+                function getMobileNumberFormURLParams() {
+                    var urlParams = new URLSearchParams(location.search);
+                    return urlParams.get("mobile");
+                }
+    
+                function getMdmsData() {
+                    var requestBody = {
+                        "RequestInfo" : {},
+                        "MdmsCriteria" : {
+                            "tenantId" : getTenantId(),
+                            "moduleDetails" : [
+                                {
+                                    "moduleName" : moduleName,
+                                    "masterDetails" : [
+                                        {
+                                            "name" : masterName,
+                                            "filter" : filterPath
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    };
+    
+                    var headers = {
+                        "Content-Type" : "application/json"
+                    };
+    
+                    var request = {
+                        method : "POST",
+                        headers : headers,
+                        body : JSON.stringify(requestBody)
+                    }
+    
+                    fetch(mdmsPath, request)
+                    .then(response => {
+                        if(response.status === 200)
+                            return response.json()
+                        else
+                            throw new Error("Error fetching Mdms Data");
+                    })
+                    .then( responseJSON => displayMdmsValueList(responseJSON));    
+                }
+    
+                function displayMdmsValueList(mdmsData) {
+                    var mdmsValues = getMdmsValueList(mdmsData);
+    
+                    var mdmsValuesOrderedList = document.getElementById("MdmsValueList");
+    
+                    for(var i in mdmsValues) {
+                        var value = mdmsValues[i]
+                        var listItem = document.createElement("li");
+                        listItem.appendChild(createAnchorNode(value));
+                        mdmsValuesOrderedList.appendChild(listItem);
+                    }
+    
+                }
+    
+                function getMdmsValueList(mdmsData) {
+                    var mdmsValues = [];
+                    var mdmsValueData = mdmsData["MdmsRes"][moduleName][masterName];
+                    for(var i in mdmsValueData) {
+                        mdmsValues.push( mdmsValueData[i] );
+                    }
+                    return mdmsValues;
+                }
+
+                function createWhatsAppLink(value) {
+                    let mobile = getMobileNumberFormURLParams();
+                    var url = whatsappURL;
+                    url += '?phone=' + mobile;
+                    url += '&text=' + value;
+                    return url;
+                }
+
+                function createAnchorNode(value) {
+                    var anchorNode = document.createElement('a');
+                    anchorNode.setAttribute('href', createWhatsAppLink(value));
+                    anchorNode.textContent = value;
+                    return anchorNode;
+                }
+
+            </script>
+    </body>
+</html>
